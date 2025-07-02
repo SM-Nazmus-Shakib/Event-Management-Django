@@ -1,4 +1,4 @@
-# forms.py
+
 from django import forms
 from .models import Event, Participant, Category
 
@@ -41,17 +41,28 @@ class StyledFormMixin:
 class EventForm(forms.ModelForm):
     class Meta:
         model = Event
-        fields = ['name', 'date', 'description', 'location', 'category', 'participants']
+        fields = ['name', 'date', 'time', 'description', 'location', 'category', 'participants']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
+            'time': forms.TimeInput(attrs={'type': 'time'}),
             'description': forms.Textarea(attrs={'rows': 4}),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['time'].required = False  
 
 class EventModelForm(StyledFormMixin, forms.ModelForm):
     class Meta:
         model = Event
-        fields = ['name', 'date', 'description', 'location', 'category', 'participants']
+        fields = ['name', 'date', 'time', 'description', 'location', 'category', 'participants']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 4}),
             'participants': forms.CheckboxSelectMultiple(),
+            'date': forms.DateInput(attrs={'type': 'date'}),
+            'time': forms.TimeInput(attrs={'type': 'time'}),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['time'].required = False

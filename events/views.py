@@ -1,12 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db.models import Q
 from datetime import date
-from .models import Event, Participant, Category
-from .forms import EventForm
+from .models import Event, Participant
+from .forms import EventForm 
+from .forms import EventModelForm as EventForm
 
 def home(request):
-    return render(request, 'events/home.html')
+    return render(request,'events/home.html')
 
 def dashboard(request):
     filter_type = request.GET.get('filter', 'all')
@@ -32,25 +32,33 @@ def dashboard(request):
         'total_participants': total_participants,
         'current_filter': filter_type,
     }
-    return render(request, 'events/dashboard.html', context)
+    return render(request,'events/dashboard.html', context)
 
 def event_create(request):
-    if request.method == 'POST':
+    if request.method=='POST':
         form = EventForm(request.POST)
         if form.is_valid():
-            form.save()
+            event = form.save(commit=False)
+            if not event.time:
+                event.time ='12:00' 
+            event.save()
+            form.save_m2m() 
             messages.success(request, 'Event created successfully!')
             return redirect('dashboard')
     else:
         form = EventForm()
-    return render(request, 'events/event_form.html', {'form': form})
+    return render(request,'events/event_form.html', {'form': form})
 
 def event_update(request, pk):
     event = get_object_or_404(Event, pk=pk)
     if request.method == 'POST':
         form = EventForm(request.POST, instance=event)
         if form.is_valid():
-            form.save()
+            event = form.save(commit=False)
+            if not event.time:
+                event.time = '12:00'
+            event.save()
+            form.save_m2m() 
             messages.success(request, 'Event updated successfully!')
             return redirect('dashboard')
     else:
@@ -63,4 +71,4 @@ def event_delete(request, pk):
         event.delete()
         messages.success(request, 'Event deleted successfully!')
         return redirect('dashboard')
-    return render(request, 'events/dashboard.html')
+    return redirect('dashboard')
