@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="py-20">
+    <div class="max-w-3xl mx-auto text-center">
+        <h1 class="text-4xl font-bold text-gray-900 mb-6">Streamline Your Events</h1>
+        <p class="text-xl text-gray-600 mb-8">
+            Professional event management made simple
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{% url 'sign-up' %}" class="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                Get Started
+            </a>
+            <a href="#features" class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                Learn More
+            </a>
+        </div>
+    </div>
+</section>
+
+<section id="features" class="py-16 bg-white">
+    <div class="max-w-5xl mx-auto px-4">
+        <h2 class="text-3xl font-bold text-center mb-12">Key Features</h2>
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="p-6 rounded-lg">
+                <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Event Scheduling</h3>
+                <p class="text-gray-600">Easily create and manage your events</p>
+            </div>
+
+            <div class="p-6 rounded-lg">
+                <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Attendee Management</h3>
+                <p class="text-gray-600">Track registrations and check-ins</p>
+            </div>
+
+            <div class="p-6 rounded-lg">
+                <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Analytics</h3>
+                <p class="text-gray-600">Get insights into your events</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
