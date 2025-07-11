@@ -1,6 +1,6 @@
 from pathlib import Path
 from decouple import config
-
+import dj_database_url 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -15,7 +15,9 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS=['https://*.onrender.com','http://127.0.0.1:8000']
+
 
 
 # Application definition
@@ -76,12 +78,12 @@ WSGI_APPLICATION = 'event_management.wsgi.application'
 
 # For SQLite
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 # For Postgres
 # DATABASES = {
@@ -95,6 +97,13 @@ DATABASES = {
 #     }
 # }
 
+DATABASES = {
+    'default': dj_database_url.config(
+        # Replace this value with your local database's connection string.
+        default='postgresql://event_management_db_04p5_user:xyCvs3mgJJvfQaNvKhSog5bhaFRn4Df4@dpg-d1htfh3uibrs73fu22d0-a.oregon-postgres.render.com/event_management_db_04p5',
+        conn_max_age=600
+    )
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
