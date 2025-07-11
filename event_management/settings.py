@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-SECRET_KEY = config('SECRET_KEY', default='0^ter^t#tt2k6gvzd3)%kw+e8!0diae_t=dd+*_^%1u9kw2k#7')
+SECRET_KEY = config('SECRET_KEY', default='0103x84dvh_j3c*6g)+6$676l_mgkt9gj!kigw97myybkf@88g')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
