@@ -1,28 +1,27 @@
 from pathlib import Path
 from decouple import config
 import dj_database_url 
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# PORT configuration for Render deployment
+PORT = int(os.environ.get('PORT', 8000))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-
 SECRET_KEY = config('SECRET_KEY', default='0103x84dvh_j3c*6g)+6$676l_mgkt9gj!kigw97myybkf@88g')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS=['https://*.onrender.com','http://127.0.0.1:8000']
 
-
-
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -32,12 +31,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'events',
     'users',
-    "debug_toolbar",
     'core'
 ]
 
+# Only add debug_toolbar in development
+if DEBUG:
+    INSTALLED_APPS.append('debug_toolbar')
+
 MIDDLEWARE = [
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -46,6 +47,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Only add debug_toolbar middleware in development
+if DEBUG:
+    MIDDLEWARE.insert(0, "debug_toolbar.middleware.DebugToolbarMiddleware")
 
 INTERNAL_IPS = [
     # ...
@@ -73,12 +78,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'event_management.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# For SQLite
-
+# For SQLite (development)
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.sqlite3',
@@ -86,7 +89,7 @@ WSGI_APPLICATION = 'event_management.wsgi.application'
 #     }
 # }
 
-# For Postgres
+# For Postgres (local development)
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
@@ -98,6 +101,7 @@ WSGI_APPLICATION = 'event_management.wsgi.application'
 #     }
 # }
 
+# For production (Render)
 DATABASES = {
     'default': dj_database_url.config(
         # Replace this value with your local database's connection string.
@@ -127,7 +131,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -139,7 +142,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
@@ -147,13 +149,12 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
+# Email Configuration
 EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)  # Fixed variable name
 EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
@@ -161,18 +162,21 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@yourevents.com')
+
+# Authentication
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-
+# Site Configuration
 SITE_URL = config('SITE_URL', default='http://127.0.0.1:8000')
 
+# User Authentication
 AUTH_USER_MODEL = 'auth.User'
 LOGIN_URL = 'users:sign-in'
 LOGIN_REDIRECT_URL = 'events:dashboard'
 LOGOUT_REDIRECT_URL = 'users:sign-in'
 
-
+# Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
