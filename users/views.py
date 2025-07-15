@@ -1,102 +1,104 @@
-from django.shortcuts import render, redirect, HttpResponse,get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User, Group
-from .forms import UserRegistrationForm, AssignRoleForm, GroupForm
+from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
-from .models import UserProfile
-from events.models import Event  # Import Event model
+from django.http import HttpResponseForbidden
+from .forms import CustomRegistrationForm, LoginForm, AssignRoleForm, CreateGroupForm
+
+User = get_user_model()
 
 def sign_up(request):
+    if request.user.is_authenticated:
+        return redirect('events:dashboard')
+        
     if request.method == 'POST':
-        form = UserRegistrationForm(request.POST)
+        form = CustomRegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            messages.success(request, 'Registration successful!')
-            return redirect('dashboard')  # Redirect to events dashboard
-        else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"{field}: {error}")
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+            messages.success(request, 'Registration successful! Please check your email to activate your account.')
+            return redirect('users:sign-in')
     else:
-        form = UserRegistrationForm()
+        form = CustomRegistrationForm()
     return render(request, 'registration/register.html', {'form': form})
 
 def sign_in(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = authenticate(request, username=username, password=password)
+    if request.user.is_authenticated:
+        return redirect('events:dashboard')
         
-        if user is not None:
-            if not user.is_active:
-                messages.error(request, 'Account not activated. Please check your email.')
-                return redirect('sign-in')
+    if request.method == 'POST':
+        form = LoginForm(data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
             login(request, user)
-            
-            # Redirect based on group
-            if user.groups.filter(name='Admin').exists():
-                return redirect('admin:index')
-            elif user.groups.filter(name='Organizer').exists():
-                return redirect('event-create')
-            else:
-                return redirect('dashboard')
-        else:
-            messages.error(request, 'Invalid username or password.')
-    return render(request, 'registration/login.html')
+            messages.success(request, f'Welcome back, {user.username}!')
+            return redirect('events:dashboard')
+    else:
+        form = LoginForm()
+    return render(request, 'registration/login.html', {'form': form})
 
+@login_required
 def sign_out(request):
     logout(request)
-    return redirect('sign-in')
+    messages.info(request, 'You have been logged out.')
+    return redirect('users:sign-in')
 
-@login_required
-def user_list(request):
-    users = User.objects.all().prefetch_related('groups')
-    return render(request, 'admin/user_list.html', {'users': users})
+def activate_user(request, user_id, token):
+    try:
+        user = User.objects.get(pk=user_id)
+        if default_token_generator.check_token(user, token):
+            user.is_active = True
+            user.save()
+            messages.success(request, 'Account activated successfully! You can now log in.')
+            return redirect('users:sign-in')
+        messages.error(request, 'Invalid activation link.')
+    except User.DoesNotExist:
+        messages.error(request, 'User not found.')
+    return redirect('home')
 
-@login_required
+
+@user_passes_test(lambda u: u.is_superuser)
+def admin_dashboard(request):
+    users = User.objects.prefetch_related('groups').all().order_by('-date_joined')
+    for user in users:
+        user.group_name = user.groups.first().name if user.groups.exists() else 'No group'
+    return render(request, 'admin/dashboard.html', {'users': users})
+
+@user_passes_test(lambda u: u.is_superuser)
 def assign_role(request, user_id):
-    user = get_object_or_404(User, id=user_id)
+    user = User.objects.get(pk=user_id)
     if request.method == 'POST':
         form = AssignRoleForm(request.POST)
         if form.is_valid():
-            group = form.cleaned_data['group']
+            role = form.cleaned_data['role']
             user.groups.clear()
-            user.groups.add(group)
-            messages.success(request, f'Role assigned successfully to {user.username}')
-            return redirect('user-list')
+            user.groups.add(role)
+            messages.success(request, f'Role {role.name} assigned to {user.username}')
+            return redirect('users:admin-dashboard')
     else:
         form = AssignRoleForm()
     return render(request, 'admin/assign_role.html', {'form': form, 'user': user})
 
-@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def create_group(request):
     if request.method == 'POST':
-        form = GroupForm(request.POST)
+        form = CreateGroupForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Group created successfully!')
-            return redirect('group-list')
+            group = form.save()
+            messages.success(request, f'Group {group.name} created successfully!')
+            return redirect('users:group-list')
     else:
-        form = GroupForm()
+        form = CreateGroupForm()
     return render(request, 'admin/create_group.html', {'form': form})
 
-@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def group_list(request):
-    groups = Group.objects.all().prefetch_related('permissions')
+    from django.contrib.auth.models import Group
+    groups = Group.objects.prefetch_related('permissions').all()
     return render(request, 'admin/group_list.html', {'groups': groups})
 
-def activate_user(request, user_id, token):
-    try:
-        user = User.objects.get(id=user_id)
-        if default_token_generator.check_token(user, token):
-            user.is_active = True
-            user.save()
-            return redirect('sign-in')
-        else:
-            return HttpResponse('Invalid Id or token')
-
-    except User.DoesNotExist:
-        return HttpResponse('User not found')
+def no_permission(request):
+    return HttpResponseForbidden("You don't have permission to access this page.")

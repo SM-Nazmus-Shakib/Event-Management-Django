@@ -1,10 +1,10 @@
 <header class="bg-white border-b">
     <nav class="container mx-auto px-4 py-4">
         <div class="flex justify-between items-center">
-            <a href="{% url 'dashboard' %}" class="text-xl font-bold text-gray-900">EventPro</a>
+            <a href="{% url 'events:dashboard' %}" class="text-xl font-bold text-gray-900">EventPro</a>
             
             <div class="hidden md:flex items-center space-x-6">
-                <a href="{% url 'dashboard' %}" class="text-gray-600 hover:text-indigo-600">Dashboard</a>
+                <a href="{% url 'events:dashboard' %}" class="text-gray-600 hover:text-indigo-600">Dashboard</a>
                 <a  class="text-gray-600 hover:text-indigo-600">Events</a>
                 
                 <div class="relative ml-4">
@@ -16,7 +16,7 @@
                     </button>
                     <div id="user-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border">
                         <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
-                        <form method="post" action="{% url 'logout' %}">
+                        <form method="post" action="{% url 'users:sign-out' %}">
                             {% csrf_token %}
                             <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                 Sign Out
@@ -34,11 +34,11 @@
         </div>
         
         <div id="mobile-menu" class="hidden md:hidden py-4 space-y-2">
-            <a href="{% url 'dashboard' %}" class="block py-2 text-gray-600">Dashboard</a>
+            <a href="{% url 'events:dashboard' %}" class="block py-2 text-gray-600">Dashboard</a>
             <a  class="block py-2 text-gray-600">Events</a>
             <div class="pt-2 border-t">
                 <a  class="block py-2 text-gray-600">Profile</a>
-                <form method="post" action="{% url 'logout' %}">
+                <form method="post" action="{% url 'users:sign-out' %}">
                     {% csrf_token %}
                     <button type="submit" class="block py-2 text-gray-600">Sign Out</button>
                 </form>

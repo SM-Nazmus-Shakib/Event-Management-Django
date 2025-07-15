@@ -1,10 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from datetime import date
-from .models import Event, Category
-from .forms import EventModelForm
+from events.models import Event,Category,Participant
+from events.forms import EventModelForm
+
+User = get_user_model()
 
 @login_required
 def dashboard(request):
@@ -12,7 +14,7 @@ def dashboard(request):
     events = Event.objects.all()
     
     if not request.user.has_perm('events.can_manage_events'):
-        events = events.filter(participants=request.user)
+        events = events.filter(participants__user=request.user) | events.filter(created_by=request.user)
     
     if filter_type == 'upcoming':
         events = events.filter(date__gte=date.today())
@@ -36,6 +38,7 @@ def dashboard(request):
 
 @login_required
 @permission_required('events.can_manage_events', raise_exception=True)
+@login_required
 def event_create(request):
     if request.method == 'POST':
         form = EventModelForm(request.POST, request=request)
@@ -43,9 +46,9 @@ def event_create(request):
             event = form.save(commit=False)
             event.created_by = request.user
             event.save()
-            form.save_m2m()  # Save many-to-many relationships
+            form.save_m2m()
             messages.success(request, 'Event created successfully!')
-            return redirect('dashboard')
+            return redirect('events:dashboard')
     else:
         form = EventModelForm(request=request)
     return render(request, 'events/event_form.html', {'form': form})
@@ -55,14 +58,14 @@ def event_update(request, pk):
     event = get_object_or_404(Event, pk=pk)
     if not request.user.has_perm('events.can_manage_events') and event.created_by != request.user:
         messages.error(request, "You don't have permission to edit this event.")
-        return redirect('dashboard')
+        return redirect('events:dashboard')
         
     if request.method == 'POST':
         form = EventModelForm(request.POST, instance=event, request=request)
         if form.is_valid():
             form.save()
             messages.success(request, 'Event updated successfully!')
-            return redirect('dashboard')
+            return redirect('events:dashboard')
     else:
         form = EventModelForm(instance=event, request=request)
     return render(request, 'events/event_form.html', {'form': form, 'event': event})
@@ -72,20 +75,27 @@ def event_delete(request, pk):
     event = get_object_or_404(Event, pk=pk)
     if not request.user.has_perm('events.can_manage_events') and event.created_by != request.user:
         messages.error(request, "You don't have permission to delete this event.")
-        return redirect('dashboard')
+        return redirect('events:dashboard')
         
     if request.method == 'POST':
         event.delete()
         messages.success(request, 'Event deleted successfully!')
-        return redirect('dashboard')
-    return redirect('dashboard')
+        return redirect('events:dashboard')
+    return render(request, 'events/event_confirm_delete.html', {'event': event})
+
 @login_required
 def rsvp_event(request, pk):
     event = get_object_or_404(Event, pk=pk)
+    participant, created = Participant.objects.get_or_create(
+        user=request.user,
+        defaults={'name': request.user.get_full_name(), 'email': request.user.email}
+    )
+    
     if request.method == 'POST':
-        if event.participants.filter(id=request.user.id).exists():
-            messages.warning(request, 'You have already RSVPed to this event.')
+        if event.participants.filter(pk=participant.pk).exists():
+            event.participants.remove(participant)
+            messages.success(request, 'You have canceled your RSVP.')
         else:
-            event.participants.add(request.user)
+            event.participants.add(participant)
             messages.success(request, 'Successfully RSVPed to the event!')
-    return redirect('dashboard')
+    return redirect('events:dashboard')
