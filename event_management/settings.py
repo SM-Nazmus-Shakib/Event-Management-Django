@@ -18,6 +18,7 @@ SECRET_KEY = config('SECRET_KEY', default='0103x84dvh_j3c*6g)+6$676l_mgkt9gj!kig
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
+
 ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS=['https://*.onrender.com','http://127.0.0.1:8000']
 
@@ -29,11 +30,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'events',
     'users',
     'core'
 ]
-
+SITE_ID = 1
 # Only add debug_toolbar in development
 if DEBUG:
     INSTALLED_APPS.append('debug_toolbar')
@@ -90,25 +92,25 @@ WSGI_APPLICATION = 'event_management.wsgi.application'
 # }
 
 # For Postgres (local development)
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': config('DB_NAME', default=''),
-#         'USER': config('DB_USER', default=''),
-#         'PASSWORD': config('DB_PASSWORD', default=''),
-#         'HOST': config('DB_HOST', default='localhost'),
-#         'PORT': config('DB_PORT', cast=int)
-#     }
-# }
-
-# For production (Render)
 DATABASES = {
-    'default': dj_database_url.config(
-        # Replace this value with your local database's connection string.
-        default='postgresql://event_management_db_04p5_user:xyCvs3mgJJvfQaNvKhSog5bhaFRn4Df4@dpg-d1htfh3uibrs73fu22d0-a.oregon-postgres.render.com/event_management_db_04p5',
-        conn_max_age=600
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('DB_NAME', default=''),
+        'USER': config('DB_USER', default=''),
+        'PASSWORD': config('DB_PASSWORD', default=''),
+        'HOST': config('DB_HOST', default='localhost'),
+        'PORT': config('DB_PORT', cast=int)
+    }
 }
+
+# # For production (Render)
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         # Replace this value with your local database's connection string.
+#         default='postgresql://event_management_db_04p5_user:xyCvs3mgJJvfQaNvKhSog5bhaFRn4Df4@dpg-d1htfh3uibrs73fu22d0-a.oregon-postgres.render.com/event_management_db_04p5',
+#         conn_max_age=600
+#     )
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -154,15 +156,14 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Email Configuration
-EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)  # Fixed variable name
-EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@yourevents.com')
 
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_HOST_USER = config('GMAIL_USER', default='your-email@gmail.com')
+EMAIL_HOST_PASSWORD = config('GMAIL_APP_PASSWORD', default='your-app-password')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='your-email@gmail.com')
 # Authentication
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
@@ -172,10 +173,12 @@ AUTHENTICATION_BACKENDS = [
 SITE_URL = config('SITE_URL', default='http://127.0.0.1:8000')
 
 # User Authentication
-AUTH_USER_MODEL = 'auth.User'
+AUTH_USER_MODEL = 'users.User'
 LOGIN_URL = 'users:sign-in'
 LOGIN_REDIRECT_URL = 'events:dashboard'
 LOGOUT_REDIRECT_URL = 'users:sign-in'
+LOGOUT_REDIRECT_URL = 'home'
+LOGIN_REDIRECT_URL = 'users:profile'
 
 # Media files
 MEDIA_URL = '/media/'

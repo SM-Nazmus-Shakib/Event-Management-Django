@@ -1,45 +1,64 @@
 from django import forms
-import re
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.contrib.auth.models import Group, Permission
-from django.core.exceptions import ValidationError
-from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import (
+    UserCreationForm, 
+    UserChangeForm,
+    PasswordChangeForm,
+    PasswordResetForm,
+    SetPasswordForm,
+    AuthenticationForm
+)
+from .models import User
+from django.contrib.auth.models import Group
 
-User = get_user_model()
+class GroupForm(forms.ModelForm):
+    class Meta:
+        model = Group
+        fields = ['name', 'permissions']
+        widgets = {
+            'permissions': forms.SelectMultiple(attrs={'class': 'form-control'}),
+        }
+
+class AssignRoleForm(forms.Form):
+    group = forms.ModelChoiceField(
+        queryset=Group.objects.all(),
+        label="Select Role"
+    )
 
 class StyledFormMixin:
-    """Mixin to apply consistent styling to form fields"""
-    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.apply_styled_widgets()
 
-    default_classes = "border-2 border-gray-300 w-full p-3 rounded-lg shadow-sm focus:outline-none focus:border-blue-500 focus:ring-blue-500"
-
     def apply_styled_widgets(self):
         for field_name, field in self.fields.items():
-            if isinstance(field.widget, (forms.TextInput, forms.PasswordInput, forms.EmailInput)):
+            base_classes = "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            
+            if isinstance(field.widget, (forms.TextInput, forms.PasswordInput, forms.EmailInput, forms.NumberInput)):
                 field.widget.attrs.update({
-                    'class': self.default_classes,
-                    'placeholder': f"Enter {field.label.lower()}"
+                    'class': f"{base_classes} py-2 px-3 border",
+                    'placeholder': field.label
+                })
+            elif isinstance(field.widget, forms.Textarea):
+                field.widget.attrs.update({
+                    'class': f"{base_classes} py-2 px-3 border",
+                    'rows': 3,
+                    'placeholder': field.label
                 })
             elif isinstance(field.widget, forms.Select):
-                field.widget.attrs.update({'class': self.default_classes})
-            elif isinstance(field.widget, forms.CheckboxSelectMultiple):
-                field.widget.attrs.update({'class': "space-y-2"})
+                field.widget.attrs.update({
+                    'class': f"{base_classes} py-2 px-3 border"
+                })
+            elif isinstance(field.widget, forms.FileInput):
+                field.widget.attrs.update({
+                    'class': "block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                })
 
 class CustomRegistrationForm(StyledFormMixin, UserCreationForm):
     email = forms.EmailField(required=True)
     
     class Meta:
         model = User
-        fields = ['username', 'email', 'password1', 'password2', 'first_name', 'last_name']
-
-    def clean_email(self):
-        email = self.cleaned_data.get('email').lower()
-        if User.objects.filter(email=email).exists():
-            raise ValidationError("Email already exists")
-        return email
+        fields = ['username', 'email', 'first_name', 'last_name', 'password1', 'password2']
 
 class LoginForm(StyledFormMixin, AuthenticationForm):
     def __init__(self, *args, **kwargs):
@@ -47,20 +66,27 @@ class LoginForm(StyledFormMixin, AuthenticationForm):
         self.fields['username'].widget.attrs.update({'placeholder': 'Enter username or email'})
         self.fields['password'].widget.attrs.update({'placeholder': 'Enter password'})
 
-class AssignRoleForm(StyledFormMixin, forms.Form):
-    role = forms.ModelChoiceField(
-        queryset=Group.objects.all(),
-        empty_label="Select a Role",
-        widget=forms.Select(attrs={'class': 'form-select'})
-    )
-
-class CreateGroupForm(StyledFormMixin, forms.ModelForm):
-    permissions = forms.ModelMultipleChoiceField(
-        queryset=Permission.objects.all(),
-        widget=forms.CheckboxSelectMultiple,
-        required=False
-    )
-
+class ProfileUpdateForm(forms.ModelForm):
     class Meta:
-        model = Group
-        fields = ['name', 'permissions']
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'phone_number', 'profile_picture', 'bio']
+
+class CustomPasswordChangeForm(StyledFormMixin, PasswordChangeForm):
+    pass
+
+class CustomPasswordResetForm(StyledFormMixin, PasswordResetForm):
+    pass
+
+class CustomSetPasswordForm(StyledFormMixin, SetPasswordForm):
+    pass
+
+# Admin forms
+class CustomUserCreationForm(StyledFormMixin, UserCreationForm):
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'first_name', 'last_name', 'phone_number', 'profile_picture', 'bio', 'is_active', 'is_staff')
+
+class CustomUserChangeForm(StyledFormMixin, UserChangeForm):
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'first_name', 'last_name', 'phone_number', 'profile_picture', 'bio', 'is_active', 'is_staff', 'groups', 'user_permissions')

@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -12,8 +13,16 @@ class Category(models.Model):
 
 class Participant(models.Model):
     name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
+    email = models.EmailField()
+    user = models.ForeignKey(
+    User,
+    on_delete=models.CASCADE,
+    related_name='participations'
+)
+
+    
+    class Meta:
+        unique_together = ('email', 'user')  # Ensure unique combination
     
     def __str__(self):
         return f"{self.name} ({self.email})"
@@ -24,9 +33,22 @@ class Event(models.Model):
     date = models.DateField()
     time = models.TimeField(null=True, blank=True)
     location = models.CharField(max_length=200)
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
-    participants = models.ManyToManyField(Participant, blank=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_events')
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+    participants = models.ManyToManyField(
+        Participant,
+        blank=True,
+        related_name='events'
+    )
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='created_events'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

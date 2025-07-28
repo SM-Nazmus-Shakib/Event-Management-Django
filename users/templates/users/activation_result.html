@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-50">
+    <div class="max-w-md w-full bg-white p-8 rounded-xl shadow-lg text-center">
+        {% if success %}
+            <div class="mb-6 text-green-500">
+                <svg class="h-16 w-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">
+                {% if already_active %}Account Already Active{% else %}Account Activated!{% endif %}
+            </h2>
+            <p class="text-gray-600 mb-6">
+                {% if already_active %}
+                Your account was already activated. You can sign in now.
+                {% else %}
+                Your account has been successfully activated. You can now sign in.
+                {% endif %}
+            </p>
+        {% else %}
+            <div class="mb-6 text-red-500">
+                <svg class="h-16 w-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Activation Failed</h2>
+            <p class="text-gray-600 mb-6">
+                The activation link is invalid or has expired. Please try registering again.
+            </p>
+        {% endif %}
+        
+        <a href="{% url 'users:sign-in' %}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition">
+            Go to Sign In
+        </a>
+    </div>
+</div>
+{% endblock %}

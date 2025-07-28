@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-2xl font-bold text-gray-800">My Profile</h1>
+        <a href="{% url 'users:profile-edit' %}" class="text-blue-600 hover:underline">Edit Profile</a>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="md:col-span-1">
+            <div class="flex flex-col items-center">
+                <img src="" 
+                     class="h-32 w-32 rounded-full object-cover mb-4">
+                <h2 class="text-xl font-semibold">{{ profile_user.get_full_name }}</h2>
+                <p class="text-gray-600">@{{ profile_user.username }}</p>
+            </div>
+        </div>
+        
+        <div class="md:col-span-2 space-y-6">
+            <div class="border-b pb-4">
+                <h3 class="text-lg font-medium text-gray-900">Personal Information</h3>
+                <div class="mt-2 grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Email</p>
+                        <p>{{ profile_user.email }}</p>
+                    </div>
+                    {% if profile_user.phone_number %}
+                    <div>
+                        <p class="text-sm text-gray-500">Phone</p>
+                        <p>{{ profile_user.phone_number }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if profile_user.bio %}
+            <div class="border-b pb-4">
+                <h3 class="text-lg font-medium text-gray-900">About</h3>
+                <p class="mt-2">{{ profile_user.bio }}</p>
+            </div>
+            {% endif %}
+            
+            <div>
+                <a href="{% url 'users:password-change' %}" class="text-blue-600 hover:underline">
+                    Change Password
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

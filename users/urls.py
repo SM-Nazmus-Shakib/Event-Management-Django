@@ -1,22 +1,38 @@
 from django.urls import path
-from .views import (
-    sign_up, sign_in, sign_out, activate_user,
-    admin_dashboard, assign_role, create_group, 
-    group_list, no_permission
+from users.views import (
+    SignUpView, SignInView, SignOutView, ActivateAccountView,
+    ProfileView, ProfileUpdateView,
+    CustomPasswordChangeView, CustomPasswordResetView,
+    CustomPasswordResetConfirmView,
+    AdminDashboardView, GroupListView, CreateGroupView, AssignRoleView  # Add these
 )
+from django.contrib.auth import views as auth_views
 
 app_name = 'users'
 
 urlpatterns = [
-    path('sign-up/', sign_up, name='sign-up'),
-    path('sign-in/', sign_in, name='sign-in'),
-    path('sign-out/', sign_out, name='sign-out'),
-    path('activate/<int:user_id>/<str:token>/', activate_user, name='activate-user'),
+    # Authentication
+    path('sign-up/', SignUpView.as_view(), name='sign-up'),
+    path('sign-in/', SignInView.as_view(), name='sign-in'),
+    path('sign-out/', SignOutView.as_view(), name='sign-out'),
+    path('activate/<int:user_id>/<str:token>/',  ActivateAccountView.as_view(), name='activate-user'),
+    # Profile
+    path('profile/', ProfileView.as_view(), name='profile'),
+    path('profile/edit/', ProfileUpdateView.as_view(), name='profile-edit'),
     
-    path('admin/dashboard/', admin_dashboard, name='admin-dashboard'),
-    path('admin/users/<int:user_id>/assign-role/', assign_role, name='assign-role'),
-    path('admin/groups/create/', create_group, name='create-group'),
-    path('admin/groups/', group_list, name='group-list'),
+    # Password
+    path('password-change/', CustomPasswordChangeView.as_view(), name='password-change'),
+    path('password-reset/', CustomPasswordResetView.as_view(), name='password_reset'),
+    path('password-reset/done/', auth_views.PasswordResetDoneView.as_view(
+        template_name='users/password_reset_done.html'), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', CustomPasswordResetConfirmView.as_view(), 
+         name='password_reset_confirm'),
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(
+        template_name='users/password_reset_complete.html'), name='password_reset_complete'),
     
-    path('no-permission/', no_permission, name='no-permission'),
+    # Admin URLs
+    path('admin/dashboard/', AdminDashboardView.as_view(), name='admin-dashboard'),
+    path('admin/groups/', GroupListView.as_view(), name='group-list'),
+    path('admin/groups/create/', CreateGroupView.as_view(), name='create-group'),
+    path('admin/assign-role/<int:user_id>/', AssignRoleView.as_view(), name='assign-role'),
 ]

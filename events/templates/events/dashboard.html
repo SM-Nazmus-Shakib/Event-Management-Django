@@ -3,30 +3,39 @@
 {% block content %}
 <div class="space-y-8">
     <!-- Messages -->
-    {% if messages %}
-    <div class="space-y-2">
-        {% for message in messages %}
-        <div class="p-4 {% if message.tags %}{{ message.tags }}{% else %}bg-green-100 text-green-700{% endif %} rounded-lg">
-            {{ message }}
-        </div>
-        {% endfor %}
+   <!-- Add this at the top for better message display -->
+{% if messages %}
+<div class="fixed top-4 right-4 z-50 space-y-2 w-full max-w-xs">
+    {% for message in messages %}
+    <div class="p-4 rounded-lg shadow-lg border-l-4 
+        {% if message.tags == 'success' %}bg-green-50 border-green-500 text-green-700
+        {% elif message.tags == 'error' %}bg-red-50 border-red-500 text-red-700
+        {% else %}bg-blue-50 border-blue-500 text-blue-700{% endif %}">
+        {{ message }}
     </div>
-    {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
 
-    <div class="flex justify-between items-center">
-        <h1 class="text-3xl font-bold text-gray-800">
-            {% if request.user.groups.all.0.name == 'Admin' %}Admin Dashboard
-            {% elif request.user.groups.all.0.name == 'Organizer' %}Organizer Dashboard
-            {% else %}My Events{% endif %}
-        </h1>
-        
-        {% if request.user.groups.all.0.name == 'Organizer' or request.user.groups.all.0.name == 'Admin' %}
-        <div class="flex gap-5">
-            <a href="{% url 'event-create' %}" class="flex-grow p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-                Create Event
-            </a>
-        </div>
-        {% endif %}
+<!-- Update the group check to be safer -->
+<h1 class="text-3xl font-bold text-gray-800">
+    {% if request.user.groups.first.name == 'Admin' %}Admin Dashboard
+    {% elif request.user.groups.first.name == 'Organizer' %}Organizer Dashboard
+    {% else %}My Events{% endif %}
+</h1>
+
+<!-- Make RSVP buttons more visible -->
+{% if request.user.groups.first.name == 'Participant' %}
+    {% if request.user in event.participants.all %}
+    <button type="submit" class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm hover:bg-red-200">
+        Cancel RSVP
+    </button>
+    {% else %}
+    <button type="submit" class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm hover:bg-green-200">
+        RSVP Now
+    </button>
+    {% endif %}
+{% endif %}
     </div>
     
     <!-- Stats Cards -->

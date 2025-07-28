@@ -7,18 +7,54 @@
     <title>{% block title %}EventPro{% endblock %}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        },
+                        secondary: {
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 min-h-screen flex flex-col">
     {% if request.user.is_authenticated %}
         {% include "logged_nav.html" %}
     {% else %}
         {% include "non_logged_nav.html" %}
     {% endif %}
 
-    <main class="container mx-auto px-4 py-8">
+    <main class="flex-grow">
+        {% if messages %}
+      <div class="fixed top-4 right-4 z-50 space-y-2 w-full max-w-xs">
+    {% for message in messages %}
+    <div class="p-4 rounded-lg shadow-lg border-l-4 
+        {% if message.tags == 'success' %}bg-green-50 border-green-500 text-green-700
+        {% elif message.tags == 'error' %}bg-red-50 border-red-500 text-red-700
+        {% elif message.tags == 'warning' %}bg-yellow-50 border-yellow-500 text-yellow-700
+        {% else %}bg-blue-50 border-blue-500 text-blue-700{% endif %}" 
+        x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)">
+        <!-- Keep the rest of the message template -->
+    </div>
+    {% endfor %}
+</div>
+        {% endif %}
+        
         {% block content %}{% endblock %}
     </main>
 
@@ -28,19 +64,25 @@
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
     <script>
         // Mobile menu toggle
-        document.getElementById('menu-toggle').addEventListener('click', function() {
-            document.getElementById('mobile-menu').classList.toggle('hidden');
-        });
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('menu-toggle');
+            if (mobileMenuButton) {
+                mobileMenuButton.addEventListener('click', function() {
+                    document.getElementById('mobile-menu').classList.toggle('hidden');
+                });
+            }
 
-        // User dropdown toggle
-        const userMenuButton = document.getElementById('user-menu-button');
-        if (userMenuButton) {
-            userMenuButton.addEventListener('click', function() {
-                document.getElementById('user-menu').classList.toggle('hidden');
-            });
-        }
+            // User dropdown toggle
+            const userMenuButton = document.getElementById('user-menu-button');
+            if (userMenuButton) {
+                userMenuButton.addEventListener('click', function() {
+                    document.getElementById('user-menu').classList.toggle('hidden');
+                });
+            }
+        });
     </script>
 </body>
 </html>

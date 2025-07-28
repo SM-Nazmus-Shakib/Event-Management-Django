@@ -12,10 +12,10 @@
         <p class="text-gray-600 mb-6">
             You don't have permission to access this page. Please contact your administrator if you believe this is an error.
         </p>
-        <a href="{% url 'events:dashboard' %}" 
-           class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2 rounded-lg transition">
-            Return to Dashboard
-        </a>
+<a href="{% if request.user.is_authenticated %}{% url 'events:dashboard' %}{% else %}{% url 'home' %}{% endif %}" 
+   class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2 rounded-lg transition">
+    Return to {% if request.user.is_authenticated %}Dashboard{% else %}Home{% endif %}
+</a>
     </div>
 </div>
 {% endblock %}
