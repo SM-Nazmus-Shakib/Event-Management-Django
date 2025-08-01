@@ -7,7 +7,11 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # PORT configuration for Render deployment
-PORT = int(os.environ.get('PORT', 8000))
+port_str = os.environ.get('PORT', '8000')
+if ':' in port_str:
+    port_str = port_str.split(':')[-1]
+PORT = int(port_str)
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
