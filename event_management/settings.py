@@ -29,8 +29,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'events',
     'users',
+    'events',
     'core'
 ]
 
@@ -101,11 +101,10 @@ WSGI_APPLICATION = 'event_management.wsgi.application'
 #     }
 # }
 
-# For production (Render)
+ # For production (Render)
 DATABASES = {
     'default': dj_database_url.config(
-        # Replace this value with your local database's connection string.
-        default='postgresql://event_management_db_04p5_user:xyCvs3mgJJvfQaNvKhSog5bhaFRn4Df4@dpg-d1htfh3uibrs73fu22d0-a.oregon-postgres.render.com/event_management_db_04p5',
+        default=config('DATABASE_URL', default='postgresql://event_management_db_ltjp_user:zAwwAxydWeBYNTEY4YvvUeuJBCnptoD3@dpg-d268kkidbo4c73et8f00-a.oregon-postgres.render.com/event_management_db_ltjp'),
         conn_max_age=600
     )
 }
@@ -163,19 +162,18 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@yourevents.com')
 
-# Authentication
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
+    'django.contrib.auth.backends.ModelBackend',  
 ]
 
 # Site Configuration
 SITE_URL = config('SITE_URL', default='http://127.0.0.1:8000')
 
 # User Authentication
-AUTH_USER_MODEL = 'auth.User'
+AUTH_USER_MODEL = 'users.CustomUser'
 LOGIN_URL = 'users:sign-in'
-LOGIN_REDIRECT_URL = 'events:dashboard'
-LOGOUT_REDIRECT_URL = 'users:sign-in'
+LOGIN_REDIRECT_URL = 'home'
+LOGIN_REDIRECT_URL = 'users:profile'
 
 # Media files
 MEDIA_URL = '/media/'
